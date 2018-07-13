@@ -623,7 +623,7 @@ Matrix::identityError(void)
 void
 correctPathCase(char *filename)
 {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(RW_PS2)
 	DIR *direct;
 	struct dirent *dirent;
 
