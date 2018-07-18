@@ -98,6 +98,14 @@ struct MemoryFunctions
 	void *(*rwmustrealloc)(void *p, size_t sz, uint32 hint);
 };
 
+struct FileFunctions
+{
+	FILE *(*rwopen)(const char *name, const char *mode);
+	size_t (*rwread)(void *ptr, size_t size, size_t nmemb, FILE *stream);
+	size_t (*rwwrite)(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+	int  (*rwclose)(FILE *);
+};
+
 // This is for platform independent things
 // TODO: move more stuff into this
 struct Engine
@@ -118,9 +126,10 @@ struct Engine
 
 	// These must always be available
 	static MemoryFunctions memfuncs;
+	static FileFunctions filefuncs;
 	static State state;
 
-	static bool32 init(void);
+	static bool32 init(MemoryFunctions* =nil, FileFunctions* =nil);
 	static bool32 open(void);
 	static bool32 start(EngineStartParams*);
 	static void term(void);
@@ -146,6 +155,11 @@ extern Engine *engine;
 #define rwNewT(t, s, h) (t*)rw::Engine::memfuncs.rwmustmalloc((s)*sizeof(t),h)
 #define rwResize(p, s, h) rw::Engine::memfuncs.rwmustrealloc(p,s,h)
 #define rwResizeT(t, p, s, h) (t*)rw::Engine::memfuncs.rwmustrealloc(p,(s)*sizeof(t),h)
+
+#define rwOpen(p, m) rw::Engine::filefuncs.rwopen(p, m)
+#define rwRead(p, s, n, f) rw::Engine::filefuncs::rwread(p, s, n, f)
+#define rwWrite(p, s, n, f) rw::Engine::filefuncs::rwwrite(p, s, n, f)
+#define rwClose(f) rw::Engine::filefuncs.rwclose(f)
 
 namespace null {
 	void beginUpdate(Camera*);
