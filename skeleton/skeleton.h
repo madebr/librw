@@ -1,8 +1,24 @@
-extern rw::EngineStartParams engineStartParams;
-
 namespace sk {
 
+#ifdef RW_PS2
+#define SKEL_PLATFORM PLATFORM_PS2
+#define SKEL_DEVICE ps2
+#define RWHALFPIXEL
+#elif defined(RW_GL3)
+#define SKEL_PLATFORM PLATFORM_GL3
+#define SKEL_DEVICE gl3
+#elif defined(RW_D3D9)
+#define SKEL_PLATFORM PLATFORM_D3D9
+#define SKEL_DEVICE d3d
+#define RWHALFPIXEL
+#else
+#define SKEL_PLATFORM PLATFORM_NULL
+#endif
+
 using namespace rw;
+
+extern uint32 engineOpenPlatform;
+extern void *engineStartParams;
 
 // same as RW skeleton
 enum Key
@@ -104,9 +120,12 @@ bool InitRW(void);
 void TerminateRW(void);
 Camera *CameraCreate(int32 width, int32 height, bool32 z);
 void CameraSize(Camera *cam, Rect *r);
-void SetMousePosition(int x, int y);
 EventStatus EventHandler(Event e, void *param);
 
+namespace SKEL_DEVICE {
+void SetMousePosition(int x, int y);
+int main(int argc, char **argv);
+}
 }
 
 sk::EventStatus AppEventHandler(sk::Event e, void *param);

@@ -8,21 +8,6 @@
 
 #ifdef RW_GL3
 #define RW_OPENGL
-#define RWDEVICE gl3
-#endif
-
-#ifdef RW_D3D9
-#define RWDEVICE d3d
-#define RWHALFPIXEL
-#endif
-
-#ifdef RW_D3D8
-#define RWDEVICE d3d
-#endif
-
-#ifdef RW_PS2
-#define RWHALFPIXEL
-#define RWDEVICE ps2
 #endif
 
 #ifdef RW_WDGL

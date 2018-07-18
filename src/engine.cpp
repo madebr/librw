@@ -113,7 +113,7 @@ Engine::init(MemoryFunctions *mf, FileFunctions *ff)
 // This is where RW allocates the engine and e.g. opens d3d
 // TODO: this will probably take an argument with device specific data
 bool32
-Engine::open(void)
+Engine::open(uint32 platform_arg)
 {
 	if(engine || Engine::state != Initialized){
 		RWERROR((ERR_ENGINEOPEN));
@@ -127,15 +127,36 @@ Engine::open(void)
 
 	// Initialize device
 	// Device and possibly OS specific!
-#ifdef RW_PS2
-	engine->device = ps2::renderdevice;
-#elif RW_GL3
-	engine->device = gl3::renderdevice;
-#elif RW_D3D9
-	engine->device = d3d::renderdevice;
-#else
-	engine->device = null::renderdevice;
+	switch (platform_arg) {
+#ifdef RW_NULL
+	case PLATFORM_NULL:
+		engine->device = null::renderdevice;
+		break;
 #endif
+#ifdef RW_GL3
+	case PLATFORM_GL:
+	case PLATFORM_GL3:
+	case PLATFORM_WDGL:
+		engine->device = gl3::renderdevice;
+		break;
+#endif
+#ifdef RW_PS2
+	case PLATFORM_PS2:
+		engine->device = ps2::renderdevice;
+		break;
+#endif
+#ifdef RW_D3D9
+	case PLATFORM_XBOX: // FIXME: set error code?
+	case PLATFORM_D3D8:
+	case PLATFORM_D3D9:
+		engine->device = d3d::renderdevice;
+		break;
+#endif
+	default:
+		RWERROR((ERR_PLATFORM));
+	return 0;
+	}
+	platform = platform_arg;
 
 	// TODO: open device; create d3d object/get video mode
 
@@ -162,7 +183,7 @@ Engine::open(void)
 // This is where RW creates the actual rendering device
 // ans calls the engine plugin ctors
 bool32
-Engine::start(EngineStartParams *p)
+Engine::start(void *p)
 {
 	if(engine == nil || Engine::state != Opened){
 		RWERROR((ERR_ENGINESTART));

@@ -1,4 +1,4 @@
-add_executable(imguitest WIN32
+add_executable(imguitest
     main.cpp
     )
 

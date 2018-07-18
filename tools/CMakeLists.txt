@@ -1,8 +1,8 @@
-if(NOT LIBRW_PLATFORM_PS2 AND NOT LIBRW_PLATFORM_NULL)
+if(LIBRW_PLATFORM_GL3 OR LIBRW_PLATFORM_D3D9)
     add_subdirectory(clumpview)
 endif()
 
-if(NOT LIBRW_PLATFORM_PS2)
+if(LIBRW_PLATFORM_NULL)
     add_subdirectory(dumprwtree)
 endif()
 

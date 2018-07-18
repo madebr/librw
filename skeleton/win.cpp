@@ -1,12 +1,14 @@
 #ifdef _WIN32
+#ifdef RW_D3D9
+
 #include <windows.h>
 #include <rw.h>
 #include "skeleton.h"
 
-using namespace sk;
-using namespace rw;
+namespace sk{
+namespace d3d{
 
-#ifdef RW_D3D9
+rw::d3d::EngineStartParams engineStartParams;
 
 static int keymap[256];
 static void
@@ -213,9 +215,8 @@ pollEvents(void)
 	}
 }
 
-int WINAPI
-WinMain(HINSTANCE instance, HINSTANCE,
-        PSTR cmdLine, int showCmd)
+int
+main(int argc, char *argv[])
 {
 /*
 	AllocConsole();
@@ -223,6 +224,7 @@ WinMain(HINSTANCE instance, HINSTANCE,
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
 */
+	HINSTANCE instance = GetModuleHandle(NULL);
 
 	INT64 ticks;
 	INT64 ticksPerSecond;
@@ -231,8 +233,9 @@ WinMain(HINSTANCE instance, HINSTANCE,
 	if(!QueryPerformanceCounter((LARGE_INTEGER*)&ticks))
 		return 0;
 
-	args.argc = __argc;
-	args.argv = __argv;
+	args.argc = argc;
+	args.argv = argv;
+
 	if(EventHandler(INITIALIZE, nil) == EVENTERROR)
 		return 0;
 
@@ -243,7 +246,12 @@ WinMain(HINSTANCE instance, HINSTANCE,
 		MessageBox(0, "MakeWindow() - FAILED", 0, 0);
 		return 0;
 	}
-	engineStartParams.window = win;
+	sk::engineOpenPlatform = PLATFORM_D3D9;
+	sk::d3d::engineStartParams.window = win;
+	sk::engineStartParams = &sk::d3d::engineStartParams;
+	if(EventHandler(INITIALIZE, nil) == EVENTERROR)
+		return 0;
+
 	initkeymap();
 
 	if(EventHandler(RWINITIALIZE, nil) == EVENTERROR)
@@ -266,35 +274,16 @@ WinMain(HINSTANCE instance, HINSTANCE,
 	return 0;
 }
 
-namespace sk {
-
 void
 SetMousePosition(int x, int y)
 {
 	POINT pos = { x, y };
-	ClientToScreen(engineStartParams.window, &pos);
+	ClientToScreen(d3d::engineStartParams.window, &pos);
 	SetCursorPos(pos.x, pos.y);
 }
 
+
 }
-
-#endif
-
-#ifdef RW_OPENGL
-int main(int argc, char *argv[]);
-
-int WINAPI
-WinMain(HINSTANCE instance, HINSTANCE,
-        PSTR cmdLine, int showCmd)
-{
-/*
-	AllocConsole();
-	freopen("CONIN$", "r", stdin);
-	freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);
-*/
-
-	return main(__argc, __argv);
 }
 #endif
 #endif

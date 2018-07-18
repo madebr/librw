@@ -626,7 +626,7 @@ beginCamera(void)
 	f[3] = 0.0f;
 }
 
-rw::EngineStartParams engineStartParams;
+rw::ps2::EngineStartParams engineStartParams;
 
 void
 pluginattach(void)
@@ -650,11 +650,10 @@ bool32
 initrw(void)
 {
 	rw::version = 0x34000;
-	rw::platform = rw::PLATFORM_PS2;
 	if(!rw::Engine::init())
 		return 0;
 	pluginattach();
-	if(!rw::Engine::open())
+	if(!rw::Engine::open(rw::PLATFORM_PS2))
 		return 0;
 	if(!rw::Engine::start(&engineStartParams))
 		return 0;

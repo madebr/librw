@@ -130,8 +130,8 @@ struct Engine
 	static State state;
 
 	static bool32 init(MemoryFunctions* =nil, FileFunctions* =nil);
-	static bool32 open(void);
-	static bool32 start(EngineStartParams*);
+	static bool32 open(uint32 platform);
+	static bool32 start(void*);
 	static void term(void);
 	static void close(void);
 	static void stop(void);

@@ -6,19 +6,20 @@ platform:
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
   matrix:
-    - LIBRW_PLATFORM: NULL
-    - LIBRW_PLATFORM: GL3
-    - LIBRW_PLATFORM: D3D9
+    - LIBRW_PLATFORMS: NULL
+    - LIBRW_PLATFORMS: GL3
+    - LIBRW_PLATFORMS: D3D9
+    - LIBRW_PLATFORMS: NULL;GL3;D3D9
 install:
   - if %platform%==Win32 set VCPKG_TRIPLET=x86-windows-static
   - if %platform%==x64 set VCPKG_TRIPLET=x64-windows-static
-  - if %LIBRW_PLATFORM%==GL3 vcpkg install glfw3:%VCPKG_TRIPLET% glew:%VCPKG_TRIPLET%
+  - if not "x%LIBRW_PLATFORMS:GL3=%"=="x%LIBRW_PLATFORMS%" vcpkg install glfw3:%VCPKG_TRIPLET% glew:%VCPKG_TRIPLET%
 before_build:
   - mkdir build
   - cd build
   - if %platform%==Win32 set CMAKE_GENERATOR=Visual Studio 15 2017
   - if %platform%==x64 set CMAKE_GENERATOR=Visual Studio 15 2017 Win64
-  - cmake .. -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -G"%CMAKE_GENERATOR%" -DVCPKG_TARGET_TRIPLET=%VCPKG_TRIPLET% -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DLIBRW_PLATFORM=%LIBRW_PLATFORM%
+  - cmake .. -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -G"%CMAKE_GENERATOR%" -DVCPKG_TARGET_TRIPLET=%VCPKG_TRIPLET% -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DLIBRW_PLATFORMS=%LIBRW_PLATFORMS%
 build:
   project: c:\projects\librw\build\librw.sln
   verbosity: minimal

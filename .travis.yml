@@ -3,13 +3,13 @@ language: cpp
 matrix:
   include:
   - os: linux
-    env: LIBRW_PLATFORM="NULL"
+    env: LIBRW_PLATFORMS="NULL"
     script:
     - mkdir -p "$TRAVIS_BUILD_DIR/build" && cd "$TRAVIS_BUILD_DIR/build"
-    - cmake "$TRAVIS_BUILD_DIR" -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORM="$LIBRW_PLATFORM"
+    - cmake "$TRAVIS_BUILD_DIR" -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORMS="$LIBRW_PLATFORMS"
     - make VERBOSE=y DESTDIR=/tmp install
   - os: linux
-    env: LIBRW_PLATFORM="GL3"
+    env: LIBRW_PLATFORMS="GL3"
     services: docker
     script:
     - mkdir -p "$TRAVIS_BUILD_DIR/build"
@@ -17,9 +17,9 @@ matrix:
     #- docker run -v "$TRAVIS_BUILD_DIR:/librw:ro,z" -v "$TRAVIS_BUILD_DIR:/build:rw,z" --name gl3_instance -d librw_gl3 sleep infinity
     - docker pull librw/gl3
     - docker run -v "$TRAVIS_BUILD_DIR:/librw:ro,z" -v "$TRAVIS_BUILD_DIR:/build:rw,z" --name gl3_instance -d librw/gl3 sleep infinity
-    - docker exec -u builder gl3_instance /bin/bash -c "cd /build && cmake /librw -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORM=$LIBRW_PLATFORM && make VERBOSE=y DESTDIR=/tmp install"
+    - docker exec -u builder gl3_instance /bin/bash -c "cd /build && cmake /librw -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORMS=\"$LIBRW_PLATFORMS\" && make VERBOSE=y DESTDIR=/tmp install"
   - os: linux
-    env: LIBRW_PLATFORM="PS2"
+    env: LIBRW_PLATFORMS="PS2"
     services: docker
     script:
     - mkdir -p "$TRAVIS_BUILD_DIR/build"
@@ -27,4 +27,4 @@ matrix:
     #- docker run -v "$TRAVIS_BUILD_DIR:/librw:ro,z" -v "$TRAVIS_BUILD_DIR:/build:rw,z" --name ps2_instance -d librw_ps2 sleep infinity
     - docker pull librw/ps2
     - docker run -v "$TRAVIS_BUILD_DIR:/librw:ro,z" -v "$TRAVIS_BUILD_DIR:/build:rw,z" --name ps2_instance -d librw/ps2 sleep infinity
-    - docker exec -u builder ps2_instance /bin/bash -c "cd /build && cmake /librw -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORM=$LIBRW_PLATFORM -DCMAKE_TOOLCHAIN_FILE=/librw/cmake/toolchain_ps2_ee.cmake && make VERBOSE=y DESTDIR=/tmp install"
+    - docker exec -u builder ps2_instance /bin/bash -c "cd /build && cmake /librw -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORMS=\"$LIBRW_PLATFORMS\" -DCMAKE_TOOLCHAIN_FILE=/librw/cmake/toolchain_ps2_ee.cmake && make VERBOSE=y DESTDIR=/tmp install"

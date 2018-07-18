@@ -1,10 +1,3 @@
-if(LIBRW_PLATFORM_GL3)
-    set(OpenGL_GL_PREFERENCE GLVND)
-    find_package(OpenGL REQUIRED)
-    find_package(GLEW REQUIRED)
-    find_package(glfw3 REQUIRED)
-endif()
-
 add_library(librw
     "${PROJECT_SOURCE_DIR}/args.h"
     "${PROJECT_SOURCE_DIR}/rw.h"
@@ -102,15 +95,27 @@ target_include_directories(librw
 target_compile_definitions(librw
     PRIVATE
         "$<IF:$<CONFIG:DEBUG>,DEBUG,NDEBUG>"
-    PUBLIC
-        "RW_${LIBRW_PLATFORM}"
     )
+
+foreach(LIBRW_PLATFORM ${LIBRW_PLATFORMS})
+    target_compile_definitions(librw
+        PUBLIC
+            "RW_${LIBRW_PLATFORM}"
+    )
+endforeach()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     target_compile_options(librw
         PRIVATE
             "-Wall"
         )
+    if(NOT LIBRW_PLATFORM_PS2)
+        target_compile_options(librw
+        PRIVATE
+            "-Wno-variadic-macros"
+            "-Wno-unused-parameter"
+        )
+endif()
     if (NOT LIBRW_PLATFORM_PS2)
         target_compile_options(librw
             PRIVATE
@@ -144,7 +149,9 @@ if(LIBRW_PLATFORM_GL3)
             GLEW::GLEW
             OpenGL::GL
         )
-elseif(LIBRW_PLATFORM_D3D9)
+endif()
+
+if(LIBRW_PLATFORM_D3D9)
     target_link_libraries(librw
         PUBLIC
             d3d9

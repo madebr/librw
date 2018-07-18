@@ -50,7 +50,7 @@ enumLights(Matrix *lightmat)
 static void
 drawAtomic(Atomic *a)
 {
-	using namespace RWDEVICE;
+	using namespace SKEL_DEVICE;
 	Im2DVertex *im2dverts;
 	V3d *xvert;
 	Matrix xform;
@@ -142,13 +142,13 @@ tlTest(Clump *clump)
 	}
 }
 
-static RWDEVICE::Im2DVertex *clipverts;
+static SKEL_DEVICE::Im2DVertex *clipverts;
 static int32 numClipverts;
 
 void
 genIm3DTransform(void *vertices, int32 numVertices, Matrix *world)
 {
-	using namespace RWDEVICE;
+	using namespace SKEL_DEVICE;
 	Im3DVertex *objverts;
 	V3d pos;
 	Matrix xform;

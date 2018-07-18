@@ -5,6 +5,8 @@
 
 namespace rw {
 
+namespace gl3 {
+
 #ifdef RW_GL3
 struct EngineStartParams
 {
@@ -13,8 +15,6 @@ struct EngineStartParams
 	const char *windowtitle;
 };
 #endif
-
-namespace gl3 {
 
 void registerPlatformPlugins(void);
 

@@ -5,7 +5,7 @@
 #include "imgui/imgui.h"
 #include "imgui_impl_rw.h"
 
-using namespace rw::RWDEVICE;
+using namespace rw::SKEL_DEVICE;
 
 static rw::Texture *g_FontTexture;
 static Im2DVertex *g_vertbuf;
@@ -174,7 +174,7 @@ ImGui_ImplRW_NewFrame(float timeDelta)
 	io.KeySuper = false;
 
 	if(io.WantMoveMouse)
-		sk::SetMousePosition(io.MousePos.x, io.MousePos.y);
+		sk::SKEL_DEVICE::SetMousePosition(io.MousePos.x, io.MousePos.y);
 
 	ImGui::NewFrame();
 }

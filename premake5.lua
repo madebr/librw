@@ -127,7 +127,6 @@ end
 
 project "clumpview"
 	kind "WindowedApp"
-	entrypoint ("WinMainCRTStartup")
 	characterset ("MBCS")
 	skeltool("clumpview")
 	removeplatforms { "*null" }
@@ -135,7 +134,6 @@ project "clumpview"
 
 project "imguitest"
 	kind "WindowedApp"
-	entrypoint ("WinMainCRTStartup")
 	characterset ("MBCS")
 	skeltool("imguitest")
 	files { "tools/imguitest/imgui/*.cpp" }

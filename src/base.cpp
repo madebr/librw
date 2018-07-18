@@ -18,21 +18,11 @@ namespace rw {
 
 int32 version = 0x36003;
 int32 build = 0xFFFF;
-#ifdef RW_PS2
-	int32 platform = PLATFORM_PS2;
-#elif RW_WDGL
-	int32 platform = PLATFORM_WDGL;
-#elif RW_GL3
-	int32 platform = PLATFORM_GL3;
-#elif RW_D3D9
-	int32 platform = PLATFORM_D3D9;
-#else
-	int32 platform = PLATFORM_NULL;
-#endif
+int32 platform = PLATFORM_NULL;
 bool32 streamAppendFrames = 0;
 char *debugFile = nil;
 
-static Matrix identMat = {
+static const Matrix identMat = {
 	{ 1.0f, 0.0f, 0.0f }, Matrix::IDENTITY|Matrix::TYPEORTHONORMAL,
 	{ 0.0f, 1.0f, 0.0f }, 0,
 	{ 0.0f, 0.0f, 1.0f }, 0,

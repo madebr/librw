@@ -1,12 +1,12 @@
 namespace rw {
 
+namespace ps2 {
+
 #ifdef RW_PS2
 struct EngineStartParams
 {
 };
 #endif
-
-namespace ps2 {
 
 void registerPlatformPlugins(void);
 

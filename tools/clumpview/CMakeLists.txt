@@ -1,9 +1,9 @@
-add_executable(clumpview WIN32
+add_executable(clumpview
     camera.cpp
     camera.h
     font.cpp
     main.cpp
-#    tests.cpp
+    tests.cpp
     )
 
 target_link_libraries(clumpview

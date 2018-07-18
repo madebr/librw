@@ -15,7 +15,7 @@ Font *curfont = &bios;
 
 #define NUMCHARS 100
 uint16 indices[NUMCHARS*6];
-RWDEVICE::Im2DVertex vertices[NUMCHARS*4];
+SKEL_DEVICE::Im2DVertex vertices[NUMCHARS*4];
 int32 curVert;
 int32 curIndex;
 
@@ -24,7 +24,7 @@ printScreen(const char *s, float32 x, float32 y)
 {
 	char c;
 	Camera *cam;
-	RWDEVICE::Im2DVertex *vert;
+	SKEL_DEVICE::Im2DVertex *vert;
 	uint16 *ix;
 	curVert = 0;
 	curIndex = 0;

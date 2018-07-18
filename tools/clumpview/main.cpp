@@ -11,7 +11,6 @@ struct SceneGlobals {
 	rw::Clump *clump;
 } Scene;
 rw::Texture *tex, *tex2;
-rw::EngineStartParams engineStartParams;
 
 void tlTest(rw::Clump *clump);
 void genIm3DTransform(void *vertices, rw::int32 numVertices, rw::Matrix *xform);
@@ -159,7 +158,6 @@ setupClump(rw::Clump *clump)
 bool
 InitRW(void)
 {
-//	rw::platform = rw::PLATFORM_D3D8;
 	if(!sk::InitRW())
 		return false;
 
@@ -227,7 +225,7 @@ InitRW(void)
 void
 im2dtest(void)
 {
-	using namespace rw::RWDEVICE;
+	using namespace rw::SKEL_DEVICE;
 	int i;
 	static struct
 	{
@@ -274,7 +272,7 @@ im2dtest(void)
 void
 im3dtest(void)
 {
-	using namespace rw::RWDEVICE;
+	using namespace rw::SKEL_DEVICE;
 	int i;
 	static struct
 	{

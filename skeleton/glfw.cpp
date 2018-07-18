@@ -6,6 +6,10 @@ using namespace rw;
 
 #ifdef RW_OPENGL
 
+namespace sk{
+namespace gl3{
+rw::gl3::EngineStartParams engineStartParams;
+
 GLFWwindow *window;
 int keymap[GLFW_KEY_LAST+1];
 
@@ -215,10 +219,12 @@ main(int argc, char *argv[])
 	if(EventHandler(INITIALIZE, nil) == EVENTERROR)
 		return 0;
 
-	engineStartParams.width = sk::globals.width;
-	engineStartParams.height = sk::globals.height;
-	engineStartParams.windowtitle = sk::globals.windowtitle;
-	engineStartParams.window = &window;
+	sk::engineOpenPlatform = PLATFORM_GL3;
+	sk::gl3::engineStartParams.width = sk::globals.width;
+	sk::gl3::engineStartParams.height = sk::globals.height;
+	sk::gl3::engineStartParams.windowtitle = sk::globals.windowtitle;
+	sk::gl3::engineStartParams.window = &window;
+	sk::engineStartParams = &sk::gl3::engineStartParams;
 
 	if(EventHandler(RWINITIALIZE, nil) == EVENTERROR)
 		return 0;
@@ -246,14 +252,13 @@ main(int argc, char *argv[])
 	return 0;
 }
 
-namespace sk {
-
 void
 SetMousePosition(int x, int y)
 {
-	glfwSetCursorPos(*engineStartParams.window, (double)x, (double)y);
+	glfwSetCursorPos(*sk::gl3::engineStartParams.window, (double)x, (double)y);
 }
 
+}
 }
 
 #endif

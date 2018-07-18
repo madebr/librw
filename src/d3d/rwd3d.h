@@ -5,18 +5,17 @@
 
 namespace rw {
 
-#ifdef RW_D3D9
-struct EngineStartParams
-{
-	HWND window;
-};
-#endif
-
 namespace d3d {
 
 extern bool32 isP8supported;
 
 #ifdef RW_D3D9
+
+struct EngineStartParams
+{
+	HWND window;
+};
+
 extern IDirect3DDevice9 *d3ddevice;
 extern Device renderdevice;
 

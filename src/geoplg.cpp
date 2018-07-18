@@ -273,7 +273,7 @@ readNativeData(Stream *stream, int32 len, void *object, int32 o, int32 s)
 		else if(platform == PLATFORM_D3D9)
 			return d3d9::readNativeData(stream, len, object, o, s);
 		else{
-			fprintf(stderr, "unknown platform %d\n", platform);
+			RWERROR((ERR_PLATFORM));
 			stream->seek(len);
 		}
 	}else{

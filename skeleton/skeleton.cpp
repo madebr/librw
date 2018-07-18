@@ -3,6 +3,9 @@
 
 namespace sk {
 
+uint32 engineOpenPlatform = rw::PLATFORM_NULL;
+void *engineStartParams = nil;
+
 Globals globals;
 Args args;
 
@@ -13,9 +16,9 @@ InitRW(void)
 		return false;
 	if(AppEventHandler(sk::PLUGINATTACH, nil) == EVENTERROR)
 		return false;
-	if(!rw::Engine::open())
+	if(!rw::Engine::open(sk::engineOpenPlatform))
 		return false;
-	if(!rw::Engine::start(&engineStartParams))
+	if(!rw::Engine::start(engineStartParams))
 		return false;
 
 	rw::Image::setSearchPath("./");
@@ -79,4 +82,10 @@ EventHandler(Event e, void *param)
 	return s;
 }
 
+}
+
+int
+main(int argc, char **argv)
+{
+	return sk::SKEL_DEVICE::main(argc, argv);
 }
