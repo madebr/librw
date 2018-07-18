@@ -202,6 +202,8 @@ inline V2d sub(const V2d &a, const V2d &b) { return makeV2d(a.x-b.x, a.y-b.y); }
 inline V2d scale(const V2d &a, float32 r) { return makeV2d(a.x*r, a.y*r); }
 inline float32 length(const V2d &v) { return sqrt(v.x*v.x + v.y*v.y); }
 inline V2d normalize(const V2d &v) { return scale(v, 1.0f/length(v)); }
+inline float32 dot(const V2d &a, const V2d &b) { return a.x*b.x + a.y*b.y; }
+inline V2d perp(const V2d &v) { return makeV2d(-v.y, v.x); }
 
 struct V3d
 {
@@ -360,6 +362,7 @@ struct Line
 	V3d start;
 	V3d end;
 };
+inline V3d lineNormal(const Line &l) { return normalize(sub(l.end, l.start)); }
 
 struct Rect
 {
