@@ -50,8 +50,7 @@ enumLights(Matrix *lightmat)
 static void
 drawAtomic(Atomic *a)
 {
-	using namespace SKEL_DEVICE;
-	Im2DVertex *im2dverts;
+	sk::Im2VertexBuffer vert2dbuff;
 	V3d *xvert;
 	Matrix xform;
 	Matrix lightmat;
@@ -71,7 +70,7 @@ drawAtomic(Atomic *a)
 	enumLights(&lightmat);
 
 	xvert = rwNewT(V3d, g->numVertices, MEMDUR_FUNCTION);
-	im2dverts = rwNewT(Im2DVertex, g->numVertices, MEMDUR_FUNCTION);
+	sk::globals.vert2DReAlloc(&vert2dbuff, g->numVertices, rw::MEMDUR_FUNCTION);
 
 	prelight = g->colors;
 	normals = g->morphTargets[0].normals;
@@ -81,14 +80,19 @@ drawAtomic(Atomic *a)
 	for(int32 i = 0; i < g->numVertices; i++){
 		float32 recipZ = 1.0f/xvert[i].z;
 
-		im2dverts[i].setScreenX(xvert[i].x * recipZ * width);
-		im2dverts[i].setScreenY((xvert[i].y * recipZ * height));
-		im2dverts[i].setScreenZ(recipZ * cam->zScale + cam->zShift);
-		im2dverts[i].setCameraZ(xvert[i].z);
-		im2dverts[i].setRecipCameraZ(recipZ);
-		im2dverts[i].setColor(255, 0, 0, 255);
-		im2dverts[i].setU(texcoords[i].u, recipZ);
-		im2dverts[i].setV(texcoords[i].v, recipZ);
+		sk::Im2VertexBase im2vert;
+		im2vert.pos.x = xvert[i].x * recipZ * width;
+		im2vert.pos.y = xvert[i].y * recipZ * height;
+		im2vert.pos.z = recipZ * cam->zScale + cam->zShift;
+		im2vert.cameraZ = xvert[i].z;
+		im2vert.recipCameraZ = recipZ;
+		im2vert.color.red = 255;
+		im2vert.color.green = 0;
+		im2vert.color.blue = 0;
+		im2vert.color.alpha = 255;
+		im2vert.texCoord.u = texcoords[i].u;
+		im2vert.texCoord.v = texcoords[i].u;
+		sk::globals.setVert2DInd(&vert2dbuff, i, &im2vert);
 	}
 	for(int32 i = 0; i < mh->numMeshes; i++){
 		for(uint32 j = 0; j < m[i].numIndices; j++){
@@ -113,7 +117,7 @@ drawAtomic(Atomic *a)
 			color = modulate(color, colf);
 			clamp(&color);
 			convColor(&col, &color);
-			im2dverts[idx].setColor(col.red, col.green, col.blue, col.alpha);
+			sk::globals.setVert2Dcolor(&vert2dbuff, idx, &col);
 		}
 
 		rw::Texture *tex = m[i].material->texture;
@@ -126,11 +130,11 @@ drawAtomic(Atomic *a)
 			rw::SetRenderStatePtr(rw::TEXTURERASTER, nil);
 
 		im2d::RenderIndexedPrimitive(rw::PRIMTYPETRILIST,
-			im2dverts, g->numVertices, m[i].indices, m[i].numIndices);
+			vert2dbuff.data, g->numVertices, m[i].indices, m[i].numIndices);
 	}
 
 	rwFree(xvert);
-	rwFree(im2dverts);
+	rwFree(vert2dbuff.data);
 }
 
 void
@@ -142,13 +146,13 @@ tlTest(Clump *clump)
 	}
 }
 
-static SKEL_DEVICE::Im2DVertex *clipverts;
-static int32 numClipverts;
+static sk::Im2VertexBuffer g_clipVerts;
 
 void
 genIm3DTransform(void *vertices, int32 numVertices, Matrix *world)
 {
-	using namespace SKEL_DEVICE;
+	using namespace rw;
+//	using namespace SKEL_DEVICE;
 	Im3DVertex *objverts;
 	V3d pos;
 	Matrix xform;
@@ -165,8 +169,7 @@ genIm3DTransform(void *vertices, int32 numVertices, Matrix *world)
 	if(world)
 		xform.transform(world, COMBINEPRECONCAT);
 
-	clipverts = rwNewT(Im2DVertex, numVertices, MEMDUR_EVENT);
-	numClipverts = numVertices;
+	sk::globals.vert2DReAlloc(&g_clipVerts, numVertices, MEMDUR_EVENT);
 
 	for(i = 0; i < numVertices; i++){
 		V3d::transformPoints(&pos, &objverts[i].position, 1, &xform);
@@ -174,27 +177,32 @@ genIm3DTransform(void *vertices, int32 numVertices, Matrix *world)
 		float32 recipZ = 1.0f/pos.z;
 		RGBA c = objverts[i].getColor();
 
-		clipverts[i].setScreenX(pos.x * recipZ * width);
-		clipverts[i].setScreenY((pos.y * recipZ * height));
-		clipverts[i].setScreenZ(recipZ * cam->zScale + cam->zShift);
-		clipverts[i].setCameraZ(pos.z);
-		clipverts[i].setRecipCameraZ(recipZ);
-		clipverts[i].setColor(c.red, c.green, c.blue, c.alpha);
-		clipverts[i].setU(objverts[i].u, recipZ);
-		clipverts[i].setV(objverts[i].v, recipZ);
+		sk::Im2VertexBase im2vert;
+		im2vert.pos.x = pos.x * recipZ * width;
+		im2vert.pos.y = pos.y * recipZ * height;
+		im2vert.pos.z = recipZ * cam->zScale + cam->zShift;
+		im2vert.cameraZ = pos.z;
+		im2vert.recipCameraZ = recipZ;
+		im2vert.color.red = c.red;
+		im2vert.color.green = c.green;
+		im2vert.color.blue = c.blue;
+		im2vert.color.alpha = c.alpha;
+		im2vert.texCoord.u = objverts[i].u;
+		im2vert.texCoord.v = objverts[i].v;
+		sk::globals.setVert2DInd(&g_clipVerts, i, &im2vert);
 	}
 }
 
 void
 genIm3DRenderIndexed(PrimitiveType prim, void *indices, int32 numIndices)
 {
-	im2d::RenderIndexedPrimitive(prim, clipverts, numClipverts, indices, numIndices);
+	im2d::RenderIndexedPrimitive(prim, g_clipVerts.data, g_clipVerts.size, indices, numIndices);
 }
 
 void
 genIm3DEnd(void)
 {
-	rwFree(clipverts);
-	clipverts = nil;
-	numClipverts = 0;
+	rwFree(g_clipVerts.data);
+	g_clipVerts.data = nil;
+	g_clipVerts.size = 0;
 }

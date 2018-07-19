@@ -3,9 +3,6 @@
 
 namespace sk {
 
-uint32 engineOpenPlatform = rw::PLATFORM_NULL;
-void *engineStartParams = nil;
-
 Globals globals;
 Args args;
 
@@ -16,9 +13,9 @@ InitRW(void)
 		return false;
 	if(AppEventHandler(sk::PLUGINATTACH, nil) == EVENTERROR)
 		return false;
-	if(!rw::Engine::open(sk::engineOpenPlatform))
+	if(!rw::Engine::open(sk::globals.engineOpenPlatform))
 		return false;
-	if(!rw::Engine::start(engineStartParams))
+	if(!rw::Engine::start(sk::globals.engineStartParams))
 		return false;
 
 	rw::Image::setSearchPath("./");
@@ -84,8 +81,37 @@ EventHandler(Event e, void *param)
 
 }
 
+namespace sk{
+namespace null {
+int
+main(int argc, char **argv){
+	fprintf(stderr, "%s\n", dbgsprint(rw::ERR_PLATFORM, rw::PLATFORM_NULL));
+	return 1;
+}
+}
+}
+
 int
 main(int argc, char **argv)
 {
-	return sk::SKEL_DEVICE::main(argc, argv);
+	int(*mainF)(int argc, char **argv) = sk::SKEL_DEVICE::main;
+	for(int i=1;i<argc;++i) {
+		if (!strcmp("-null", argv[i])) {
+			mainF = sk::null::main;
+		}
+#ifdef RW_OPENGL
+		else if (!strcmp("-gl3", argv[i])) {
+			mainF = sk::gl3::main;
+		}
+#endif
+		else if (!strcmp("-d3d", argv[i])) {
+#ifdef RW_D3D9
+			mainF = sk::d3d::main;
+#else
+			fprintf(stderr, "%s\n", dbgsprint(rw::ERR_PLATFORM, rw::PLATFORM_D3D9));
+			return 1;
+#endif
+		}
+	}
+	return mainF(argc, argv);
 }

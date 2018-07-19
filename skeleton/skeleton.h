@@ -3,22 +3,20 @@ namespace sk {
 #ifdef RW_PS2
 #define SKEL_PLATFORM PLATFORM_PS2
 #define SKEL_DEVICE ps2
-#define RWHALFPIXEL
+//#define SKEL_HALFPIXEL
 #elif defined(RW_GL3)
 #define SKEL_PLATFORM PLATFORM_GL3
 #define SKEL_DEVICE gl3
 #elif defined(RW_D3D9)
 #define SKEL_PLATFORM PLATFORM_D3D9
 #define SKEL_DEVICE d3d
-#define RWHALFPIXEL
+//#define SKEL_HALFPIXEL
 #else
 #define SKEL_PLATFORM PLATFORM_NULL
+#define SKEL_DEVICE null
 #endif
 
 using namespace rw;
-
-extern uint32 engineOpenPlatform;
-extern void *engineStartParams;
 
 // same as RW skeleton
 enum Key
@@ -93,8 +91,32 @@ enum Event
 	QUIT
 };
 
+struct Im2VertexBuffer {
+	char *data;
+	int elemSize;
+	int size;
+};
+
+struct Im2VertexBase
+{
+	rw::V3d pos;
+	rw::float32 cameraZ;
+	rw::float32 recipCameraZ;
+	rw::RGBA color;
+	rw::TexCoords texCoord;
+};
+
 struct Globals
 {
+	uint32 engineOpenPlatform;
+	void *engineStartParams;
+	bool32 halfPixel;
+	void (*setMousePositionCb)(int x, int y);
+
+	void (*vert2DReAlloc)(Im2VertexBuffer *buffer, size_t nb, uint32 hint);
+	void (*setVert2DInd)(Im2VertexBuffer *buffer, size_t index, Im2VertexBase *data);
+	void (*setVert2Dcolor)(Im2VertexBuffer *buffer, size_t index, rw::RGBA *color);
+
 	const char *windowtitle;
 	int32 width;
 	int32 height;
@@ -122,10 +144,16 @@ Camera *CameraCreate(int32 width, int32 height, bool32 z);
 void CameraSize(Camera *cam, Rect *r);
 EventStatus EventHandler(Event e, void *param);
 
-namespace SKEL_DEVICE {
-void SetMousePosition(int x, int y);
+#ifdef RW_OPENGL
+namespace gl3 {
 int main(int argc, char **argv);
 }
+#endif
+#ifdef RW_D3D9
+namespace d3d {
+int main(int argc, char **argv);
+}
+#endif
 }
 
 sk::EventStatus AppEventHandler(sk::Event e, void *param);

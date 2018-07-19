@@ -210,6 +210,41 @@ mousebtn(GLFWwindow *window, int button, int action, int mods)
 	EventHandler(MOUSEBTN, &ms);
 }
 
+void
+SetMousePosition(int x, int y)
+{
+	glfwSetCursorPos(*sk::gl3::engineStartParams.window, (double)x, (double)y);
+}
+
+void
+vert2DReAlloc(Im2VertexBuffer *buffer, size_t nb, uint32 hint)
+{
+	assert(buffer);
+	buffer->data = (char*)rwReallocT(rw::gl3::Im2DVertex, buffer->data, nb, hint);
+	buffer->elemSize = sizeof(rw::gl3::Im2DVertex);
+	buffer->size = nb;
+}
+
+void
+setVert2DInd(Im2VertexBuffer *buffer, size_t index, Im2VertexBase *data)
+{
+	rw::gl3::Im2DVertex *dstVert = &((rw::gl3::Im2DVertex *)buffer->data)[index];
+	dstVert->setScreenX(data->pos.x);
+	dstVert->setScreenY(data->pos.y);
+	dstVert->setScreenZ(data->pos.z);
+	dstVert->setCameraZ(data->cameraZ);
+	dstVert->setRecipCameraZ(data->recipCameraZ);
+	dstVert->setColor(data->color.red, data->color.green, data->color.blue, data->color.alpha);
+	dstVert->setU(data->texCoord.u, data->recipCameraZ);
+	dstVert->setV(data->texCoord.v, data->recipCameraZ);
+}
+
+void
+setVert2Dcolor(Im2VertexBuffer *buffer, size_t index, rw::RGBA *color) {
+	rw::gl3::Im2DVertex *dstVert = &((rw::gl3::Im2DVertex *)buffer->data)[index];
+	dstVert->setColor(color->red, color->green, color->blue, color->alpha);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -219,12 +254,18 @@ main(int argc, char *argv[])
 	if(EventHandler(INITIALIZE, nil) == EVENTERROR)
 		return 0;
 
-	sk::engineOpenPlatform = PLATFORM_GL3;
 	sk::gl3::engineStartParams.width = sk::globals.width;
 	sk::gl3::engineStartParams.height = sk::globals.height;
 	sk::gl3::engineStartParams.windowtitle = sk::globals.windowtitle;
 	sk::gl3::engineStartParams.window = &window;
-	sk::engineStartParams = &sk::gl3::engineStartParams;
+
+	sk::globals.engineOpenPlatform = PLATFORM_GL3;
+	sk::globals.engineStartParams = &sk::gl3::engineStartParams;
+	sk::globals.halfPixel = 0;
+	sk::globals.setMousePositionCb = sk::gl3::SetMousePosition;
+	sk::globals.vert2DReAlloc = sk::gl3::vert2DReAlloc;
+	sk::globals.setVert2DInd = sk::gl3::setVert2DInd;
+	sk::globals.setVert2Dcolor = sk::gl3::setVert2Dcolor;
 
 	if(EventHandler(RWINITIALIZE, nil) == EVENTERROR)
 		return 0;
@@ -250,12 +291,6 @@ main(int argc, char *argv[])
 	EventHandler(RWTERMINATE, nil);
 
 	return 0;
-}
-
-void
-SetMousePosition(int x, int y)
-{
-	glfwSetCursorPos(*sk::gl3::engineStartParams.window, (double)x, (double)y);
 }
 
 }

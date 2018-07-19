@@ -5,11 +5,9 @@
 #include "imgui/imgui.h"
 #include "imgui_impl_rw.h"
 
-using namespace rw::SKEL_DEVICE;
-
 static rw::Texture *g_FontTexture;
-static Im2DVertex *g_vertbuf;
-static int g_vertbufSize;
+
+static sk::Im2VertexBuffer g_vertBuf;
 
 void
 ImGui_ImplRW_RenderDrawLists(ImDrawData* draw_data)
@@ -20,39 +18,38 @@ ImGui_ImplRW_RenderDrawLists(ImDrawData* draw_data)
 	if (io.DisplaySize.x <= 0.0f || io.DisplaySize.y <= 0.0f)
 		return;
 
-	if(g_vertbuf == nil || g_vertbufSize < draw_data->TotalVtxCount){
-		if(g_vertbuf){
-			rwFree(g_vertbuf);
-			g_vertbuf = nil;
-		}
-		g_vertbufSize = draw_data->TotalVtxCount + 5000;
-		g_vertbuf = rwNewT(Im2DVertex, g_vertbufSize, 0);
-	}
+	if(g_vertBuf.data == nil || g_vertBuf.size < draw_data->TotalVtxCount)
+		sk::globals.vert2DReAlloc(&g_vertBuf, draw_data->TotalVtxCount + 5000, rw::MEMDUR_NA);
 
 	float xoff = 0.0f;
 	float yoff = 0.0f;
-#ifdef RWHALFPIXEL
-	xoff = -0.5;
-	yoff = 0.5;
-#endif
+	if (sk::globals.halfPixel){
+		xoff = -0.5;
+		yoff = 0.5;
+	}
 
 	rw::Camera *cam = (rw::Camera*)rw::engine->currentCamera;
-	Im2DVertex *vtx_dst = g_vertbuf;
-	float recipZ = 1.0f/cam->nearPlane;
+	int vtx_dst_i = 0;
+	const float recipZ = 1.0f/cam->nearPlane;
 	for(int n = 0; n < draw_data->CmdListsCount; n++){
 		const ImDrawList *cmd_list = draw_data->CmdLists[n];
 		const ImDrawVert *vtx_src = cmd_list->VtxBuffer.Data;
 		for(int i = 0; i < cmd_list->VtxBuffer.Size; i++){
-			vtx_dst[i].setScreenX(vtx_src[i].pos.x + xoff);
-			vtx_dst[i].setScreenY(vtx_src[i].pos.y + yoff);
-			vtx_dst[i].setScreenZ(rw::im2d::GetNearZ());
-			vtx_dst[i].setCameraZ(cam->nearPlane);
-			vtx_dst[i].setRecipCameraZ(recipZ);
-			vtx_dst[i].setColor(vtx_src[i].col&0xFF, vtx_src[i].col>>8 & 0xFF, vtx_src[i].col>>16 & 0xFF, vtx_src[i].col>>24 & 0xFF);
-			vtx_dst[i].setU(vtx_src[i].uv.x, recipZ);
-			vtx_dst[i].setV(vtx_src[i].uv.y, recipZ);
+			sk::Im2VertexBase im2Vertex;
+			im2Vertex.pos.x = vtx_src[i].pos.x + xoff;
+			im2Vertex.pos.y = vtx_src[i].pos.y + yoff;
+			im2Vertex.pos.z = rw::im2d::GetNearZ();
+			im2Vertex.cameraZ = cam->nearPlane;
+			im2Vertex.recipCameraZ = recipZ;
+			im2Vertex.color.red = vtx_src[i].col&0xFF;
+			im2Vertex.color.green = vtx_src[i].col>>8 & 0xFF;
+			im2Vertex.color.blue = vtx_src[i].col>>16 & 0xFF;
+			im2Vertex.color.alpha = vtx_src[i].col>>24 & 0xFF;
+			im2Vertex.texCoord.u = vtx_src[i].uv.x;
+			im2Vertex.texCoord.v = vtx_src[i].uv.y;
+			sk::globals.setVert2DInd(&g_vertBuf, vtx_dst_i+i, &im2Vertex);
 		}
-		vtx_dst += cmd_list->VtxBuffer.Size;
+		vtx_dst_i += cmd_list->VtxBuffer.Size;
 	}
 
 	rw::SetRenderState(rw::VERTEXALPHA, 1);
@@ -78,12 +75,12 @@ ImGui_ImplRW_RenderDrawLists(ImDrawData* draw_data)
 				}else
 					rw::SetRenderStatePtr(rw::TEXTURERASTER, nil);
 				rw::im2d::RenderIndexedPrimitive(rw::PRIMTYPETRILIST,
-					g_vertbuf+vtx_offset, cmd_list->VtxBuffer.Size,
+					g_vertBuf.data+vtx_offset, cmd_list->VtxBuffer.Size,
 					cmd_list->IdxBuffer.Data+idx_offset, pcmd->ElemCount);
 			}
 			idx_offset += pcmd->ElemCount;
 		}
-		vtx_offset += cmd_list->VtxBuffer.Size;
+		vtx_offset += cmd_list->VtxBuffer.Size * g_vertBuf.elemSize;
 	}
 }
 
@@ -174,7 +171,7 @@ ImGui_ImplRW_NewFrame(float timeDelta)
 	io.KeySuper = false;
 
 	if(io.WantMoveMouse)
-		sk::SKEL_DEVICE::SetMousePosition(io.MousePos.x, io.MousePos.y);
+		sk::globals.setMousePositionCb(io.MousePos.x, io.MousePos.y);
 
 	ImGui::NewFrame();
 }

@@ -215,6 +215,41 @@ pollEvents(void)
 	}
 }
 
+void
+SetMousePosition(int x, int y)
+{
+	POINT pos = { x, y };
+	ClientToScreen(d3d::engineStartParams.window, &pos);
+	SetCursorPos(pos.x, pos.y);
+}
+
+void
+vert2DReAlloc(Im2VertexBuffer *buffer, size_t nb) {
+	assert(buffer);
+	buffer->data = rwReallocT(rw::d3d::Im2DVertex, buffer->data, nb, 0);
+	buffer->elemSize = sizeof(rw::d3d::Im2DVertex);
+	buffer->size = nb;
+}
+
+void setVert2DInd(Im2VertexBuffer *buffer, size_t index, Im2VertexBase *data)
+{
+	rw::d3d::Im2DVertex *dstVert = &((rw::d3d::Im2DVertex *)buffer->data)[index];
+	dstVert->setScreenX(data->pos.x);
+	dstVert->setScreenY(data->pos.y);
+	dstVert->setScreenZ(data->pos.z);
+	dstVert->setCameraZ(data->cameraZ);
+	dstVert->setRecipCameraZ(data->recipCameraZ);
+	dstVert->setColor(data->color.red, data->color.green, data->color.blue, data->color.alpha);
+	dstVert->setU(data->texCoord.x, data->recipCameraZ);
+	dstVert->setV(data->texCoord.y, data->recipCameraZ);
+}
+
+void
+setVert2Dcolor(Im2VertexBuffer *buffer, size_t index, rw::RGBA *color) {
+	rw::d3d::Im2DVertex *dstVert = &((rw::d3d::Im2DVertex *)buffer->data)[index];
+	dstVert->setColor(color->red, color->green, color->blue, color->alpha);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -246,9 +281,18 @@ main(int argc, char *argv[])
 		MessageBox(0, "MakeWindow() - FAILED", 0, 0);
 		return 0;
 	}
-	sk::engineOpenPlatform = PLATFORM_D3D9;
+
 	sk::d3d::engineStartParams.window = win;
-	sk::engineStartParams = &sk::d3d::engineStartParams;
+
+	sk::globals.engineOpenPlatform = PLATFORM_D3D9;
+	sk::globals.engineStartParams = &sk::d3d::engineStartParams;
+	sk::globals.halfPixel = 1;
+
+	sk::globals.setMousePositionCb = sk::d3d::SetMousePosition;
+	sk::globals.vert2DReAlloc = sk::d3d::vert2DReAlloc;
+	sk::globals.setVert2DInd = sk::d3d::setVert2DInd;
+	sk::globals.setVert2Dcolor = sk::d3d::setVert2Dcolor;
+
 	if(EventHandler(INITIALIZE, nil) == EVENTERROR)
 		return 0;
 
@@ -272,14 +316,6 @@ main(int argc, char *argv[])
 	EventHandler(RWTERMINATE, nil);
 
 	return 0;
-}
-
-void
-SetMousePosition(int x, int y)
-{
-	POINT pos = { x, y };
-	ClientToScreen(d3d::engineStartParams.window, &pos);
-	SetCursorPos(pos.x, pos.y);
 }
 
 

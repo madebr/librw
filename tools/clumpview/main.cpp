@@ -218,6 +218,7 @@ InitRW(void)
 	camera->update();
 
 	Scene.world->addCamera(camera->m_rwcam);
+	Scene.clump->world = Scene.world;
 
 	return true;
 }
@@ -225,7 +226,6 @@ InitRW(void)
 void
 im2dtest(void)
 {
-	using namespace rw::SKEL_DEVICE;
 	int i;
 	static struct
 	{
@@ -244,21 +244,31 @@ im2dtest(void)
 		{   0.0f, 480.0f,   0, 0, 255, 128,    1.0f, 1.0f },
 		{ 640.0f, 480.0f,   0, 255, 255, 128,  1.0f, 0.0f },
 	};
-	Im2DVertex verts[4];
+
+	static const int NB = 4;
+	sk::Im2VertexBuffer vertBuffer;
+	if(vertBuffer.size < NB){
+		sk::globals.vert2DReAlloc(&vertBuffer, NB, rw::MEMDUR_NA);
+	}
 	static short indices[] = {
 		0, 1, 2, 3
 	};
 
 	float recipZ = 1.0f/Scene.camera->nearPlane;
 	for(i = 0; i < 4; i++){
-		verts[i].setScreenX(vs[i].x);
-		verts[i].setScreenY(vs[i].y);
-		verts[i].setScreenZ(rw::im2d::GetNearZ());
-		verts[i].setCameraZ(Scene.camera->nearPlane);
-		verts[i].setRecipCameraZ(recipZ);
-		verts[i].setColor(vs[i].r, vs[i].g, vs[i].b, vs[i].a);
-		verts[i].setU(vs[i].u, recipZ);
-		verts[i].setV(vs[i].v, recipZ);
+		sk::Im2VertexBase im2vtx;
+		im2vtx.pos.x = vs[i].x;
+		im2vtx.pos.y = vs[i].y;
+		im2vtx.pos.z = rw::im2d::GetNearZ();
+		im2vtx.cameraZ = Scene.camera->nearPlane;
+		im2vtx.recipCameraZ = recipZ;
+		im2vtx.color.red = vs[i].r;
+		im2vtx.color.green= vs[i].g;
+		im2vtx.color.blue = vs[i].b;
+		im2vtx.color.alpha = vs[i].a;
+		im2vtx.texCoord.u = vs[i].u;
+		im2vtx.texCoord.v = vs[i].v;
+		sk::globals.setVert2DInd(&vertBuffer, i, &im2vtx);
 	}
 
 	rw::SetRenderStatePtr(rw::TEXTURERASTER, tex2->raster);
@@ -266,13 +276,12 @@ im2dtest(void)
 	rw::SetRenderState(rw::TEXTUREFILTER, rw::Texture::NEAREST);
 	rw::SetRenderState(rw::VERTEXALPHA, 1);
 	rw::im2d::RenderIndexedPrimitive(rw::PRIMTYPETRISTRIP,
-		&verts, 4, &indices, 4);
+		vertBuffer.data, 4, &indices, 4);
 }
 
 void
 im3dtest(void)
 {
-	using namespace rw::SKEL_DEVICE;
 	int i;
 	static struct
 	{
@@ -290,19 +299,28 @@ im3dtest(void)
 		{  1.0f, -1.0f,  1.0f,   0, 0, 255, 128,    1.0f, 0.0f },
 		{  1.0f,  1.0f,  1.0f,   255, 0, 255, 128,  1.0f, 1.0f },
 	};
-	Im3DVertex verts[8];
+
+	const int NB = 8;
+	static sk::Im2VertexBuffer vertBuffer;
+	sk::globals.vert2DReAlloc(&vertBuffer, NB, rw::MEMDUR_NA);
+
 	static short indices[2*6] = {
 		0, 1, 2, 2, 1, 3,
 		4, 5, 6, 6, 5, 7
 	};
 
-	for(i = 0; i < 8; i++){
-		verts[i].setX(vs[i].x);
-		verts[i].setY(vs[i].y);
-		verts[i].setZ(vs[i].z);
-		verts[i].setColor(vs[i].r, vs[i].g, vs[i].b, vs[i].a);
-		verts[i].setU(vs[i].u);
-		verts[i].setV(vs[i].v);
+	for(i = 0; i < NB; i++){
+		sk::Im2VertexBase im2Vertex;
+		im2Vertex.pos.x = vs[i].x;
+		im2Vertex.pos.y = vs[i].y;
+		im2Vertex.pos.z = vs[i].z;
+		im2Vertex.color.red = vs[i].r;
+		im2Vertex.color.green = vs[i].g;
+		im2Vertex.color.blue = vs[i].b;
+		im2Vertex.color.alpha = vs[i].a;
+		im2Vertex.texCoord.u = vs[i].u;
+		im2Vertex.texCoord.v = vs[i].v;
+		sk::globals.setVert2DInd(&vertBuffer, i, &im2Vertex);
 	}
 
 	rw::SetRenderStatePtr(rw::TEXTURERASTER, tex->raster);
@@ -314,7 +332,7 @@ im3dtest(void)
 	genIm3DRenderIndexed(rw::PRIMTYPETRILIST, indices, 12);
 	genIm3DEnd();
 */
-	rw::im3d::Transform(verts, 8, nil);
+	rw::im3d::Transform(vertBuffer.data, NB, nil);
 	rw::im3d::RenderIndexed(rw::PRIMTYPETRILIST, indices, 12);
 	rw::im3d::End();
 }
