@@ -127,18 +127,18 @@ end
 
 project "clumpview"
 	kind "WindowedApp"
+	entrypoint ("WinMainCRTStartup")
 	characterset ("MBCS")
 	skeltool("clumpview")
-	flags { "WinMain" }
 	removeplatforms { "*null" }
 	removeplatforms { "ps2" } -- for now
 
 project "imguitest"
 	kind "WindowedApp"
+	entrypoint ("WinMainCRTStartup")
 	characterset ("MBCS")
 	skeltool("imguitest")
 	files { "tools/imguitest/imgui/*.cpp" }
-	flags { "WinMain" }
 	removeplatforms { "*null" }
 	removeplatforms { "ps2" }
 
