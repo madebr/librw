@@ -1,5 +1,16 @@
-GLEWdir = "C:/Users/aap/src/glew-2.1.0"
-GLFW64dir = "C:/Users/aap/src/glfw-3.2.1.bin.WIN64"
+newoption {
+	trigger     = "glewdir",
+	value       = "path",
+	description = "Directory of GLEW",
+	default     = "C:/Users/aap/src/glew-2.1.0",
+}
+
+newoption {
+	trigger     = "glfwdir",
+	value       = "path",
+	description = "Directory of glfw",
+	default     = "C:/Users/aap/src/glfw-3.2.1.bin.WIN64",
+}
 
 workspace "librw"
 	location "build"
@@ -50,8 +61,8 @@ workspace "librw"
 
 	filter { "platforms:win*gl3" }
 		defines { "GLEW_STATIC" }
-		includedirs { path.join(GLEWdir, "include") }
-		includedirs { path.join(GLFW64dir, "include") }
+		includedirs { path.join(_OPTIONS["glewdir"], "include") }
+		includedirs { path.join(_OPTIONS["glfwdir"], "include") }
 
 	filter "action:vs*"
 		buildoptions { "/wd4996", "/wd4244" }
@@ -83,10 +94,10 @@ function findlibs()
 	filter { "platforms:win*gl3" }
 		defines { "GLEW_STATIC" }
 	filter { "platforms:win-amd64-gl3" }
-		libdirs { path.join(GLEWdir, "lib/Release/x64") }
-		libdirs { path.join(GLFW64dir, "lib-vc2015") }
+		libdirs { path.join(_OPTIONS["glewdir"], "lib/Release/x64") }
+		libdirs { path.join(_OPTIONS["glfwdir"], "lib-vc2015") }
 	filter { "platforms:win-x86-gl3" }
-		libdirs { path.join(GLEWdir, "lib/Release/Win32") }
+		libdirs { path.join(_OPTIONS["glewdir"], "lib/Release/Win32") }
 	filter { "platforms:win*gl3" }
 		links { "glew32s", "glfw3", "opengl32" }
 	filter { "platforms:*d3d9" }
@@ -119,7 +130,7 @@ end
 function vucode()
 	filter "files:**.dsm"
 		buildcommands {
-			'cpp "%{file.relpath}" | dvp-as -o "%{cfg.objdir}/%{file.basename}.o"'
+			'dvp-as "%{file.relpath}" -o "%{cfg.objdir}/%{file.basename}.o"'
 		}
 		buildoutputs { '%{cfg.objdir}/%{file.basename}.o' }
 	filter {}
@@ -156,8 +167,7 @@ project "ps2test"
 	linkoptions { '-mno-crt0', "-T$(PS2SDK)/ee/startup/linkfile" }
 	libdirs { "$(PS2SDK)/ee/lib" }
 	links { "librw" }
-	-- "c -lc" is a hack because we need -lc twice for some reason
-	links { "c -lc", "kernel", "mf" }
+	links { "kernel", "mf" }
 
 --project "ps2rastertest"
 --	kind "ConsoleApp"

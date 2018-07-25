@@ -7,7 +7,9 @@ ENV PATH   $PATH:$PS2DEV/bin:$PS2DEV/ee/bin:$PS2DEV/iop/bin:$PS2DEV/dvp/bin:$PS2
 ENV DEBIAN_FRONTEND noninteractive
 
 ENV TOOLCHAIN_GIT_URL git://github.com/madebr/ps2toolchain.git
-ENV TOOLCHAIN_GIT_BRANCH master_gcc5
+ENV TOOLCHAIN_GIT_BRANCH master
+
+ENV PREMAKE5_URL=https://github.com/premake/premake-core/releases/download/v5.0.0-alpha12/premake-5.0.0-alpha12-linux.tar.gz
 
 RUN mkdir -p "$PS2DEV" "$PS2SDK" \
     && apt-get update \
@@ -26,10 +28,8 @@ RUN mkdir -p "$PS2DEV" "$PS2SDK" \
         wget \
         zip \
         zlib1g-dev \
-        libgmp-dev \
-        libmpc-dev \
-        gcc-multilib \
-        texinfo \
+        libglew-dev \
+        libglfw3-dev \
     && git clone -b $TOOLCHAIN_GIT_BRANCH $TOOLCHAIN_GIT_URL /toolchain \
     && cd /toolchain \
     && ./toolchain.sh \
@@ -44,6 +44,9 @@ RUN mkdir -p "$PS2DEV" "$PS2SDK" \
         /ps2dev/test.tmp \
         /toolchain \
     && rm -rf /var/lib/apt/lists/* \
+    && wget "$PREMAKE5_URL" -O /tmp/premake5.tar.gz \
+    && tar xf /tmp/premake5.tar.gz -C /usr/bin/ \
+    && rm /tmp/premake5.tar.gz \
     && groupadd 1000 -g 1000 \
     && groupadd 1001 -g 1001 \
     && groupadd 2000 -g 2000 \
