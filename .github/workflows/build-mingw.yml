@@ -1,0 +1,47 @@
+name: Build using cmake+msys2+mingw64
+on:
+  pull_request:
+  push:
+  release:
+    types: published
+jobs:
+  build-mingw-w64:
+    strategy:
+      matrix:
+        include:
+          - cmake_options: -DLIBRW_PLATFORM=GL3 -DLIBRW_GL3_GFXLIB=GLFW
+            artifact_name: "mingw-gl3-glfw"
+          - cmake_options: -DLIBRW_PLATFORM=GL3 -DLIBRW_GL3_GFXLIB=SDL2
+            artifact_name: "mingw-gl3-sdl2"
+          - cmake_options: -DLIBRW_PLATFORM=D3D9
+            artifact_name: "mingw-d3d9"
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-glfw
+            mingw-w64-x86_64-SDL2
+      - name: "Build files (CMake)"
+        run: |
+          cmake -S. -Bbuild ${{ matrix.cmake_options }} -DLIBRW_INSTALL=True -G "MinGW Makefiles"
+          cmake --build build --parallel
+      - name: "Create binary package (CPack)"
+        working-directory: ./build
+        run: |
+          cpack
+      - name: "Archive binary package (github artifacts)"
+        uses: actions/upload-artifact@v2
+        with:
+          name: "${{ matrix.artifact_name }}"
+          path: build/*.tar.xz
+          if-no-files-found: error
