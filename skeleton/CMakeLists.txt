@@ -38,6 +38,8 @@ target_include_directories(librw_skeleton
         $<INSTALL_INTERFACE:${LIBRW_INSTALL_INCLUDEDIR}/skeleton>
 )
 
+librw_platform_target(librw_skeleton PROVIDES_WINMAIN INSTALL)
+
 if(LIBRW_INSTALL)
     install(
         FILES
