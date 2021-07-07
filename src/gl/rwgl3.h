@@ -1,7 +1,6 @@
 #ifdef RW_GL3
 #include "glad/glad.h"
 #ifdef LIBRW_SDL2
-#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #else
 #include <GLFW/glfw3.h>
