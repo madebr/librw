@@ -1,3 +1,10 @@
+set(librw_SUBPROJECT OFF)
+set(librw_MAINPROJECT ON)
+if(DEFINED PROJECT_NAME)
+    set(librw_SUBPROJECT ON)
+    set(librw_MAINPROJECT OFF)
+endif()
+
 cmake_minimum_required(VERSION 3.8)
 project(librw
     VERSION 0.0.1
@@ -7,24 +14,22 @@ set(librw_AUTHOR aap)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+set(LIBRW_STATIC_RUNTIME_DEFAULT OFF)
+
 if(WIN32)
     set(LIBRW_PLATFORMS "NULL" "GL3" "D3D9")
-    set(LIBRW_PLATFORM_GL3_REQUIRES_OPENGL ON)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/win")
     include(WinFunctions)
 elseif(NINTENDO_SWITCH)
     set(LIBRW_PLATFORMS "NULL" "GL3")
-    set(LIBRW_PLATFORM_GL3_REQUIRES_OPENGL OFF)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/nx")
     include(NXFunctions)
 elseif(PS2)
     set(LIBRW_PLATFORMS "NULL" "PS2")
-    set(LIBRW_PLATFORM_GL3_REQUIRES_OPENGL OFF)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/ps2")
     include(PS2Functions)
 else()
     set(LIBRW_PLATFORMS "NULL" "GL3")
-    set(LIBRW_PLATFORM_GL3_REQUIRES_OPENGL ON)
 endif()
 set(LIBRW_PLATFORM "NULL" CACHE STRING "Platform")
 set_property(CACHE LIBRW_PLATFORM PROPERTY STRINGS ${LIBRW_PLATFORMS})
@@ -55,9 +60,14 @@ endif()
 
 include(CMakeDependentOption)
 
-option(LIBRW_TOOLS "Build librw tools" ON)
-option(LIBRW_INSTALL "Install librw files" OFF)
+option(LIBRW_TOOLS "Build librw tools" ${librw_MAINPROJECT})
+option(LIBRW_INSTALL "Install librw files" ${librw_MAINPROJECT})
+option(LIBRW_STATIC_RUNTIME "Try very hard to link to static libraries" ${LIBRW_STATIC_RUNTIME_DEFAULT})
 cmake_dependent_option(LIBRW_EXAMPLES "Build librw examples" ON "NOT LIBRW_PLATFORM_PS2;NOT LIBRW_PLATFORM_NULL" OFF)
+
+if(LIBRW_STATIC_RUNTIME)
+    include(UseStaticRuntime)
+endif()
 
 if(LIBRW_INSTALL)
     include(GNUInstallDirs)

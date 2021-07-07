@@ -1,5 +1,8 @@
-include(CMakeDependentOption)
-cmake_dependent_option(LIBRW_STATIC_LIBGCC "Use static libgcc/libstdc++ runtime" ON MINGW OFF)
+set(LIBRW_STATIC_RUNTIME_DEFAULT ON)
+
+if(MINGW)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/mingw")
+endif()
 
 function(librw_platform_target TARGET)
     cmake_parse_arguments(LPT "PROVIDES_WINMAIN" "" "" ${ARGN})
@@ -15,7 +18,6 @@ function(librw_platform_target TARGET)
         endif()
         if(TARGET_TYPE STREQUAL "EXECUTABLE")
             if(LIBRW_STATIC_LIBGCC)
-                target_link_options(${TARGET} PRIVATE -static-libgcc -static-libstdc++)
             endif()
         endif()
     endif()
