@@ -1,65 +1,85 @@
-set(SDL2_FOUND OFF)
+# This script supports shared and static SDL2 simultaneously.
 
-# On Windows, SDL2main is included as part of the pkg-config output, which isn't desirable when linking.
-if(NOT WIN32)
-    find_package(PkgConfig QUIET)
-    if(PKG_CONFIG_FOUND)
-        pkg_check_modules(SDL2 IMPORTED_TARGET "sdl2")
-        if(TARGET PkgConfig::SDL2 AND NOT TARGET SDL2::SDL2)
-            add_library(SDL2::SDL2 INTERFACE IMPORTED)
-            set_property(TARGET SDL2::SDL2 PROPERTY INTERFACE_LINK_LIBRARIES PkgConfig::SDL2)
+if(NOT DEFINED SDL2_STATIC_INIT)
+    set(SDL2_STATIC_INIT OFF)
+endif()
+option(SDL2_STATIC "By default, use static SDL2." ${SDL2_STATIC_INIT})
+
+if(MSVC)
+    set(_lib_prefix )
+    set(_lib_static_suffix .lib)
+    set(_lib_shared_suffix .dll.lib)
+else()
+    set(_lib_prefix lib)
+    if(WIN32)
+        set(_lib_static_suffix .a)
+        set(_lib_shared_suffix .dll.a)
+    else()
+        set(_lib_static_suffix .a)
+        if(APPLE)
+            set(_lib_shared_suffix .dylib)
+        else()
+            set(_lib_shared_suffix .so)
         endif()
     endif()
 endif()
 
-if(NOT SDL2_FOUND)
-    if(CMAKE_C_COMPILER_ID MATCHES "^MSVC$")
-        if(LIBRW_STATIC_RUNTIME)
-            set(_sdl2lib_names SDL2.lib SDL2d.lib)
-        else()
-            set(_sdl2lib_names SDL2.dll.lib SDL2d.dll.lib)
-        endif()
-    else()
-        if(WIN32)
-            if(LIBRW_STATIC_RUNTIME)
-                set(_sdl2lib_names libSDL2.a libSDL2d.a)
-            else()
-                set(_sdl2lib_names libSDL2.dll.a libSDL2d.dll.a)
-            endif()
-        else()
-            set(_sdl2lib_names SDL2 SDL2d)
-        endif()
-    endif()
+find_path(SDL2_INCLUDE_DIR SDL.h PATH_SUFFIXES SDL2)
+find_library(SDL2_STATIC_LIBRARY ${_lib_prefix}SDL2${_lib_static_suffix})
+find_library(SDL2_SHARED_LIBRARY ${_lib_prefix}SDL2${_lib_shared_suffix})
 
-    find_path(SDL2_INCLUDE_DIR SDL.h PATH_SUFFIXES SDL2)
-    find_library(SDL2_LIBRARY ${_sdl2lib_names})
+set(_sdl2_required_variables )
+if(SDL2_STATIC)
+    list(APPEND _sdl2_required_variables SDL2_STATIC_LIBRARY)
+else()
+    list(APPEND _sdl2_required_variables SDL2_SHARED_LIBRARY)
+endif()
+list(APPEND _sdl2_required_variables SDL2_INCLUDE_DIR)
 
-    find_library(SDL2main_LIBRARY SDL2main)
+# SDL2main is always a static library
+find_library(SDL2main_LIBRARY ${_lib_prefix}SDL2main${_lib_static_suffix})
 
-    include(FindPackageHandleStandardArgs)
-    find_package_handle_standard_args(SDL2
-        REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(SDL2
+    REQUIRED_VARS ${_sdl2_required_variables}
+)
+
+set(SDL2_SHARED_EXTRA_LIBRARIES CACHE STRING "SDL2 extra shared libraries")
+if(WIN32)
+    set(SDL2_STATIC_EXTRA_LIBRARIES imm32 setupapi version winmm CACHE STRING "SDL2 extra static libraries")
+else()
+    set(SDL2_STATIC_EXTRA_LIBRARIES  CACHE STRING "SDL2 extra static libraries")
+endif()
+
+if(SDL2_INCLUDE_DIR AND SDL2_STATIC_LIBRARY AND NOT TARGET SDL2::SDL2_static)
+    add_library(SDL2::SDL2_static UNKNOWN IMPORTED)
+    set_target_properties(SDL2::SDL2_static PROPERTIES
+        IMPORTED_LOCATION "${SDL2_STATIC_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${SDL2_STATIC_EXTRA_LIBRARIES}"
     )
+endif()
 
-    if(LIBRW_STATIC_RUNTIME)
-        if(WIN32)
-            set(SDL2_SUPPORT_LIBRARIES imm32 setupapi version winmm)
-        else()
-            set(SDL2_SUPPORT_LIBRARIES )
-        endif()
-    else()
-        set(SDL2_SUPPORT_LIBRARIES )
-    endif()
-
+if(SDL2_INCLUDE_DIR AND SDL2_SHARED_LIBRARY AND NOT TARGET SDL2::SDL2_shared)
+    add_library(SDL2::SDL2_shared UNKNOWN IMPORTED)
+    set_target_properties(SDL2::SDL2_shared PROPERTIES
+        IMPORTED_LOCATION "${SDL2_SHARED_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${SDL2_SHARED_EXTRA_LIBRARIES}"
+    )
 endif()
 
 if(SDL2_FOUND AND NOT TARGET SDL2::SDL2)
-    add_library(SDL2::SDL2 UNKNOWN IMPORTED)
-    set_target_properties(SDL2::SDL2 PROPERTIES
-        IMPORTED_LOCATION "${SDL2_LIBRARY}"
-        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
-        INTERFACE_LINK_LIBRARIES "${SDL2_SUPPORT_LIBRARIES}"
-    )
+    add_library(SDL2::SDL2 INTERFACE IMPORTED)
+    if(SDL2_STATIC)
+        set_target_properties(SDL2::SDL2 PROPERTIES
+            INTERFACE_LINK_LIBRARIES "SDL2::SDL2_static"
+        )
+    else()
+        set_target_properties(SDL2::SDL2 PROPERTIES
+            INTERFACE_LINK_LIBRARIES "SDL2::SDL2_shared"
+        )
+    endif()
 endif()
 
 if(SDL2main_LIBRARY AND NOT TARGET SDL2::SDL2main)

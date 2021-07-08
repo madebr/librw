@@ -96,11 +96,18 @@ if(LIBRW_INSTALL)
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
     )
 
-    if(LIBRW_GL3_GFXLIB STREQUAL "SDL2")
-        install(
-            FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/FindSDL2.cmake"
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
-        )
+    if(LIBRW_PLATFORM STREQUAL "GL3")
+        if(LIBRW_GL3_GFXLIB STREQUAL "SDL2")
+            install(
+                FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/FindSDL2.cmake"
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
+            )
+        elseif(LIBRW_GL3_GFXLIB STREQUAL "GLFW")
+            install(
+                FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/Findglfw3.cmake"
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
+            )
+        endif()
     endif()
 
     string(REPLACE "." ";" cmake_c_compiler_version_list "${CMAKE_C_COMPILER_VERSION}")
@@ -150,8 +157,18 @@ if(LIBRW_INSTALL)
             message(WARNING "Unknown os. Created cpack package will be wrong. (override using cpack -P)")
         endif()
     endif()
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(AMD64|amd64|x86_64|X86_64|i[3-6]86)$")
+        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            set(processor "-x86")
+        else()
+            set(processor "-x64")
+        endif()
+    else()
+        set(processor "-UNK")
+        message(WARNING "Unknown processor. Created cpack package will be wrong. (override using cpack -P)")
+    endif()
 
-    set(CPACK_PACKAGE_NAME "${PROJECT_NAME}${platform}${os}${compiler}")
+    set(CPACK_PACKAGE_NAME "${PROJECT_NAME}${platform}${os}${compiler}${processor}")
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A (partial) re-implementation of RenderWare Graphics")
     set(CPACK_PACKAGE_VENDOR "aap")
     set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/LICENSE")
