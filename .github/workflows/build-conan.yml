@@ -1,4 +1,4 @@
-name: conan + cmake
+name: Conan
 on:
   pull_request:
   push:
