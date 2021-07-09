@@ -77,7 +77,7 @@ function(add_erl_executable TARGET)
     set(outfile "${output_dir}/${output_name}.erl")
 
     add_custom_command(OUTPUT "${outfile}"
-        COMMAND "${CMAKE_COMMAND}" -E copy  "$<TARGET_FILE:${TARGET}>" "${outfile}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:${TARGET}>" "${outfile}"
         COMMAND "${CMAKE_STRIP}" --strip-unneeded -R .mdebug.eabi64 -R .reginfo -R .comment "${outfile}"
         DEPENDS ${TARGET}
     )
