@@ -68,7 +68,10 @@ set(CMAKE_EXECUTABLE_SUFFIX ".elf")
 function(add_erl_executable TARGET)
     cmake_parse_arguments("AEE" "" "OUTPUT_VAR" "" ${ARGN})
 
-    get_target_property(output_dir ${TARGET} RUNTIME_OUTPUT_DIRECTORY)
+    get_target_property(output_dir "${TARGET}" RUNTIME_OUTPUT_DIRECTORY)
+    if(NOT output_dir)
+        set(output_dir ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
 
     get_target_property(output_name ${TARGET} OUTPUT_NAME)
     if(NOT output_name)
