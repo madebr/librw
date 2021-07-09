@@ -49,9 +49,9 @@ set(CMAKE_LINKER "${PS2DEV}/ee/bin/mips64r5900el-ps2-elf-ld" CACHE FILEPATH "Lin
 set(CMAKE_RANLIB "${PS2DEV}/ee/bin/mips64r5900el-ps2-elf-ranlib" CACHE FILEPATH "ranlib")
 set(CMAKE_STRIP "${PS2DEV}/ee/bin/mips64r5900el-ps2-elf-strip" CACHE FILEPATH "strip")
 
-set(CMAKE_ASM_FLAGS_INIT "-G0 -I\"${PS2SDK}/ee/include\" -I\"${PS2SDK}/common/include\"")
-set(CMAKE_C_FLAGS_INIT "-G0 -fno-common -I\"${PS2SDK}/ee/include\" -I\"${PS2SDK}/common/include\"")
-set(CMAKE_CXX_FLAGS_INIT "-G0 -fno-common -I\"${PS2SDK}/ee/include\" -I\"${PS2SDK}/common/include\"")
+set(CMAKE_ASM_FLAGS_INIT "-G0 -I\"${PS2SDK}/ee/include\" -I\"${PS2SDK}/common/include\" -D_EE")
+set(CMAKE_C_FLAGS_INIT "-G0 -fno-common -I\"${PS2SDK}/ee/include\" -I\"${PS2SDK}/common/include\" -D_EE")
+set(CMAKE_CXX_FLAGS_INIT "-G0 -fno-common -I\"${PS2SDK}/ee/include\" -I\"${PS2SDK}/common/include\" -D_EE")
 set(CMAKE_EXE_LINKER_FLAGS_INIT "-G0 -L\"${PS2SDK}/ee/lib\" -Wl,-r -Wl,-d")
 
 set(CMAKE_FIND_ROOT_PATH "${PS2DEV}/ee" "${PS2SDK}/ee" "${GSKIT}")
