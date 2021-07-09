@@ -12,9 +12,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Install dependencies"
         run: |
-          apk update
-          apk upgrade
-          apk add cmake make
+          apk add cmake make tar xz
       - name: "Install dependencies (ps2dev fixup)"
         run: |
           apk add mpfr mpc1
