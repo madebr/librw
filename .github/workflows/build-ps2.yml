@@ -15,7 +15,7 @@ jobs:
           apk add cmake make
       - name: "Install dependencies (ps2dev fixup)"
         run: |
-          apk add mpfr mpc1
+          apk add gmp mpfr mpc1
       - name: "Build files"
         run: |
           cmake -S. -Bbuild -DLIBRW_INSTALL=ON -DLIBRW_PLATFORM=PS2 -DCMAKE_TOOLCHAIN_FILE=cmake/ps2/cmaketoolchain/toolchain_ps2_ee.cmake
