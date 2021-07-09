@@ -3,8 +3,12 @@ add_executable(ps2test
     main.cpp
     mem.h
     ps2.h
+
     vu/defaultpipe.dsm
     vu/skinpipe.dsm
+
+    vu/light.vu
+    vu/setup_persp.vu
 )
 
 target_link_libraries(ps2test
