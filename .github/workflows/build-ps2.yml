@@ -19,7 +19,7 @@ jobs:
       - name: "Build files"
         run: |
           cmake -S. -Bbuild -DLIBRW_INSTALL=ON -DLIBRW_PLATFORM=PS2 -DCMAKE_TOOLCHAIN_FILE=cmake/ps2/cmaketoolchain/toolchain_ps2_ee.cmake
-          cmake --build build
+          cmake --build build --verbose
       - name: "Create binary package (cpack)"
         working-directory: ./build
         run: |
