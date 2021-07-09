@@ -13,7 +13,7 @@ target_link_libraries(ps2test
         kernel
 )
 
-librw_platform_target(ps2test)
+librw_platform_target(ps2test INSTALL)
 
 if(LIBRW_INSTALL)
     install(TARGETS ps2test
