@@ -38,7 +38,7 @@ jobs:
           apk add cmake gmp mpc1 mpfr4 make pkgconf git
       - name: 'Setup SDL2'
         if: ${{ matrix.case.gl3_gfxlib == 'SDL2' }}
-        uses: libsdl-org/setup-sdl@main
+        uses: madebr/setup-sdl@streams
         with:
           version: 2-latest
           install-linux-dependencies: true
